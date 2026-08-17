@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Test Deploy</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 600px; margin: 40px auto; padding: 0 16px; }
+  button { margin-right: 8px; padding: 6px 12px; }
+  pre { background: #f4f4f4; padding: 12px; border-radius: 6px; white-space: pre-wrap; }
+  input { padding: 6px; width: 100%; box-sizing: border-box; margin: 8px 0; }
+</style>
+</head>
+<body>
+  <h1>Backend Test Console</h1>
+  <!-- Change API_BASE_URL if the backend runs on a different host/port -->
+  <p id="status">Checking backend...</p>
+
+  <button id="btnMessage">GET /api/message</button>
+  <button id="btnHealth">GET /api/health</button>
+
+  <input id="echoInput" placeholder="Type something to echo">
+  <button id="btnEcho">POST /api/echo</button>
+
+  <h3>Response</h3>
+  <pre id="output">-</pre>
+
+<script>
+  const API_BASE_URL = 'http://localhost:3000';
+
+  const statusEl = document.getElementById('status');
+  const outputEl = document.getElementById('output');
+
+  async function callApi(path, options) {
+    try {
+      const res = await fetch(API_BASE_URL + path, options);
+      const data = await res.json();
+      outputEl.textContent = JSON.stringify(data, null, 2);
+    } catch (err) {
+      outputEl.textContent = 'Error: ' + err.message;
+    }
+  }
+
+  async function checkHealth() {
+    try {
+      const res = await fetch(API_BASE_URL + '/api/health');
+      statusEl.textContent = res.ok ? 'Backend is reachable.' : 'Backend responded with an error.';
+    } catch {
+      statusEl.textContent = 'Backend is unreachable at ' + API_BASE_URL;
+    }
+  }
+
+  document.getElementById('btnMessage').addEventListener('click', () => callApi('/api/message'));
+  document.getElementById('btnHealth').addEventListener('click', () => callApi('/api/health'));
+  document.getElementById('btnEcho').addEventListener('click', () => {
+    const value = document.getElementById('echoInput').value;
+    callApi('/api/echo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ value }),
+    });
+  });
+
+  checkHealth();
+</script>
+</body>
+</html>
